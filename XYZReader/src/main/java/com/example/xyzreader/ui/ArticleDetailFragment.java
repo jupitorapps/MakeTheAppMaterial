@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
@@ -124,7 +125,7 @@ public class ArticleDetailFragment extends Fragment implements
             }
         });
 
-        mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
+        mScrollView = mRootView.findViewById(R.id.scrollview);
         mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
             @Override
             public void onScrollChanged() {
@@ -151,6 +152,8 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
+
+
         updateStatusBar();
         return mRootView;
     }
@@ -278,6 +281,7 @@ public class ArticleDetailFragment extends Fragment implements
         mCursor = cursor;
         if (mCursor != null && !mCursor.moveToFirst()) {
             Log.e(TAG, "Error reading item detail cursor");
+       //     Toast.makeText(getActivity().getApplicationContext(), "Error reading item detail cursor", Toast.LENGTH_SHORT).show();
             mCursor.close();
             mCursor = null;
         }
