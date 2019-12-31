@@ -17,6 +17,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ShareCompat;
 import androidx.palette.graphics.Palette;
 import android.text.Html;
@@ -24,6 +27,7 @@ import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -34,6 +38,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -67,6 +72,8 @@ public class ArticleDetailFragment extends Fragment implements
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+
+    private CollapsingToolbarLayout collapsingToolbarLayout;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -116,7 +123,7 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
+        DrawInsetsFrameLayout mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
                 mRootView.findViewById(R.id.draw_insets_frame_layout);
         mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
             @Override
@@ -125,21 +132,8 @@ public class ArticleDetailFragment extends Fragment implements
             }
         });
 
-        mScrollView = mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
-        mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
-
-        mStatusBarColorDrawable = new ColorDrawable(0);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,24 +147,13 @@ public class ArticleDetailFragment extends Fragment implements
 
         bindViews();
 
+        Toolbar toolbar = mRootView.findViewById(R.id.toolbarDetail);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        collapsingToolbarLayout = mRootView.findViewById(R.id.collapsing_toolbar_layout);
 
-        updateStatusBar();
+        getActivityCast().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         return mRootView;
-    }
-
-    private void updateStatusBar() {
-        int color = 0;
-        if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-            float f = progress(mScrollY,
-                    mStatusBarFullOpacityBottom - mTopInset * 3,
-                    mStatusBarFullOpacityBottom - mTopInset);
-            color = Color.argb((int) (255 * f),
-                    (int) (Color.red(mMutedColor) * 0.9),
-                    (int) (Color.green(mMutedColor) * 0.9),
-                    (int) (Color.blue(mMutedColor) * 0.9));
-        }
-        mStatusBarColorDrawable.setColor(color);
-        mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
     }
 
     static float progress(float v, float min, float max) {
@@ -203,10 +186,10 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
+      //  TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
+        TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        TextView bodyView = mRootView.findViewById(R.id.article_body);
 
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -215,7 +198,14 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+//            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            collapsingToolbarLayout.setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
+          //  collapsingToolbarLayout.setCollapsedTitleTextColor(Color.parseColor("#ffffff"));
+
+        //    collapsingToolbarLayout.setTitle(getActivityCast().getTitle());
+            collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
+            collapsingToolbarLayout.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
+
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
@@ -245,9 +235,9 @@ public class ArticleDetailFragment extends Fragment implements
                                 Palette p = Palette.generate(bitmap, 12);
                                 mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                                updateStatusBar();
+//                                mRootView.findViewById(R.id.meta_bar)
+//                                        .setBackgroundColor(mMutedColor);
+                                //updateStatusBar();
                             }
                         }
 
@@ -258,9 +248,9 @@ public class ArticleDetailFragment extends Fragment implements
                     });
         } else {
             mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
-            bylineView.setText("N/A" );
-            bodyView.setText("N/A");
+//            titleView.setText("N/A");
+//            bylineView.setText("N/A" );
+//            bodyView.setText("N/A");
         }
     }
 
@@ -304,5 +294,13 @@ public class ArticleDetailFragment extends Fragment implements
         return mIsCard
                 ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
                 : mPhotoView.getHeight() - mScrollY;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        getActivityCast().onBackPressed();
+
+        return false;
     }
 }
