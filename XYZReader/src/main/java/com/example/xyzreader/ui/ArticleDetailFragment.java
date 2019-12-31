@@ -39,6 +39,8 @@ import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -123,8 +125,7 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        DrawInsetsFrameLayout mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-                mRootView.findViewById(R.id.draw_insets_frame_layout);
+        DrawInsetsFrameLayout mDrawInsetsFrameLayout = mRootView.findViewById(R.id.draw_insets_frame_layout);
         mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
             @Override
             public void onInsetsChanged(Rect insets) {
@@ -133,11 +134,13 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
 
-        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
+        mPhotoView = mRootView.findViewById(R.id.photo);
 
-        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab = mRootView.findViewById(R.id.share_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
                         .setType("text/plain")
                         .setText("Some sample text")
@@ -145,13 +148,16 @@ public class ArticleDetailFragment extends Fragment implements
             }
         });
 
+
+
+
         bindViews();
 
         Toolbar toolbar = mRootView.findViewById(R.id.toolbarDetail);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         collapsingToolbarLayout = mRootView.findViewById(R.id.collapsing_toolbar_layout);
 
-        getActivityCast().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         return mRootView;
     }
@@ -235,9 +241,6 @@ public class ArticleDetailFragment extends Fragment implements
                                 Palette p = Palette.generate(bitmap, 12);
                                 mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-//                                mRootView.findViewById(R.id.meta_bar)
-//                                        .setBackgroundColor(mMutedColor);
-                                //updateStatusBar();
                             }
                         }
 
@@ -248,9 +251,6 @@ public class ArticleDetailFragment extends Fragment implements
                     });
         } else {
             mRootView.setVisibility(View.GONE);
-//            titleView.setText("N/A");
-//            bylineView.setText("N/A" );
-//            bodyView.setText("N/A");
         }
     }
 
@@ -271,7 +271,6 @@ public class ArticleDetailFragment extends Fragment implements
         mCursor = cursor;
         if (mCursor != null && !mCursor.moveToFirst()) {
             Log.e(TAG, "Error reading item detail cursor");
-       //     Toast.makeText(getActivity().getApplicationContext(), "Error reading item detail cursor", Toast.LENGTH_SHORT).show();
             mCursor.close();
             mCursor = null;
         }
